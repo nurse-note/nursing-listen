@@ -1,7 +1,7 @@
 // 간호 암기 목록 오프라인 지원
 // 화면(index.html)과 sync.js는 인터넷이 되면 항상 서버의 최신본을 받고, 안 되면 저장본을 씁니다.
 // 로그인·동기화 통신(Firebase 서버)은 저장하지 않고 그대로 통과시킵니다.
-const CACHE = "kn-listen-v2";
+const CACHE = "kn-listen-v3";
 const SHELL = ["./", "index.html", "sync.js", "manifest.webmanifest", "icons/icon-192.png", "icons/icon-512.png", "icons/maskable-512.png", "icons/apple-touch-icon.png"];
 const CACHE_HOSTS = ["fonts.googleapis.com", "fonts.gstatic.com", "www.gstatic.com"];
 self.addEventListener("install", (e) => { e.waitUntil(caches.open(CACHE).then((c) => c.addAll(SHELL)).then(() => self.skipWaiting())); });
