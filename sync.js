@@ -1,6 +1,6 @@
 // 간호 암기 목록 — 계정 로그인과 기록 동기화 (Firebase, 간호학 단어장과 같은 프로젝트·같은 계정)
 // 기록은 users/{uid} 문서의 "ls" 칸에만 저장합니다. 단어장 기록(w, h 칸)은 읽지도 바꾸지도 않습니다.
-// 올리는 것: 별표, 재생 설정. (재생 위치·음성 선택은 기기마다 달라서 올리지 않습니다 → 밤새 틀어도 쓰기 횟수가 늘지 않음)
+// 올리는 것: 별표, 읽기 제외, 재생 설정. (재생 위치·음성 선택은 기기마다 달라서 올리지 않습니다 → 밤새 틀어도 쓰기 횟수가 늘지 않음)
 const V = "13.1.0";
 const BASE = "https://www.gstatic.com/firebasejs/" + V + "/";
 const firebaseConfig = {
@@ -18,7 +18,7 @@ const KN = () => window.KN;
 const STATUS = {
   loading: "동기화 기능을 불러오는 중…",
   failed: "동기화 기능을 불러오지 못했어요. 인터넷 연결을 확인한 뒤 앱을 다시 열어 주세요. (듣기는 그대로 할 수 있어요)",
-  out: "간호학 단어장과 같은 계정으로 로그인하면 별표와 재생 설정이 휴대폰·PC에서 똑같이 맞춰져요.",
+  out: "간호학 단어장과 같은 계정으로 로그인하면 별표·읽기 제외·재생 설정이 휴대폰·PC에서 똑같이 맞춰져요.",
   syncing: "동기화 중…",
   synced: "동기화됨",
   pending: "올릴 기록이 있어요",
@@ -111,17 +111,24 @@ async function resetPw(email) {
 }
 
 // ----- 합치기: 별표는 항목마다, 설정은 통째로 더 최근(t가 큰) 것을 남깁니다 -----
-function ensure(S) { S.stT = S.stT || {}; S.dd = S.dd || {}; S.dd.st = S.dd.st || {}; S.cfgT = S.cfgT || 0; }
+// 항목별 표시 두 가지: st = 별표(S.stars), sk = 읽기 제외(S.skip)
+const MARKS = [["st", "stars", "stT"], ["sk", "skip", "skT"]];
+function ensure(S) {
+  S.dd = S.dd || {}; S.cfgT = S.cfgT || 0;
+  MARKS.forEach(([k, v, t]) => { S[v] = S[v] || {}; S[t] = S[t] || {}; S.dd[k] = S.dd[k] || {}; });
+}
 function mergeRemote(ls) {
   const S = KN().S; ensure(S); let changed = false;
-  const rst = (ls && ls.st) || {};
-  for (const id in rst) {
-    const r = rst[id]; if (!r || typeof r !== "object") continue;
-    if ((r.t || 0) > (S.stT[id] || 0)) {
-      if (r.v) S.stars[id] = 1; else delete S.stars[id];
-      S.stT[id] = r.t || 0; delete S.dd.st[id]; changed = true;
+  MARKS.forEach(([k, v, t]) => {
+    const rm = (ls && ls[k]) || {};
+    for (const id in rm) {
+      const r = rm[id]; if (!r || typeof r !== "object") continue;
+      if ((r.t || 0) > (S[t][id] || 0)) {
+        if (r.v) S[v][id] = 1; else delete S[v][id];
+        S[t][id] = r.t || 0; delete S.dd[k][id]; changed = true;
+      }
     }
-  }
+  });
   const rc = ls && ls.cfg;
   if (rc && (rc.t || 0) > (S.cfgT || 0)) {
     CFG_KEYS.forEach((k) => { if (k in rc) S[k] = rc[k]; });
@@ -129,7 +136,7 @@ function mergeRemote(ls) {
   }
   return changed;
 }
-function dirtyCount(S) { ensure(S); return Object.keys(S.dd.st).length + (S.dd.cfg ? 1 : 0); }
+function dirtyCount(S) { ensure(S); return Object.keys(S.dd.st).length + Object.keys(S.dd.sk).length + (S.dd.cfg ? 1 : 0); }
 
 // 쓰기 횟수 보호: 한 번에 하나만 보내고(보내는 중이면 끝난 뒤 한 번 더), 변경은 3초 모아서 보냄
 let inflight = false, again = false;
@@ -147,19 +154,22 @@ async function flush(manual) {
   clearTimeout(timer);
   if (inflight) { again = true; return; }
   const S = KN().S; ensure(S);
-  const ids = Object.keys(S.dd.st), sendCfg = !!S.dd.cfg;
-  if (!ids.length && !sendCfg) { if (status !== "denied") setStatus("synced"); return; }
-  const st = {}, sent = {};
-  ids.forEach((id) => { st[id] = { v: S.stars[id] ? 1 : 0, t: S.stT[id] || Date.now() }; sent[id] = st[id].t; });
-  const ls = {};
-  if (ids.length) ls.st = st;
+  const sendCfg = !!S.dd.cfg, ls = {}, sent = {};
+  let n = 0;
+  MARKS.forEach(([k, v, t]) => {
+    const ids = Object.keys(S.dd[k]); if (!ids.length) return;
+    const m = {}; sent[k] = {};
+    ids.forEach((id) => { m[id] = { v: S[v][id] ? 1 : 0, t: S[t][id] || Date.now() }; sent[k][id] = m[id].t; n++; });
+    ls[k] = m;
+  });
+  if (!n && !sendCfg) { if (status !== "denied") setStatus("synced"); return; }
   let cfgSent = 0;
   if (sendCfg) { const c = { t: S.cfgT || Date.now() }; CFG_KEYS.forEach((k) => { c[k] = S[k]; }); ls.cfg = c; cfgSent = c.t; }
   setStatus("syncing");
   inflight = true; firstPend = 0;
   try {
     await FS.setDoc(FS.doc(db, "users", user.uid), { ls, lsAt: FS.serverTimestamp() }, { merge: true });
-    ids.forEach((id) => { if ((S.stT[id] || 0) === sent[id]) delete S.dd.st[id]; });
+    MARKS.forEach(([k, v, t]) => { for (const id in (sent[k] || {})) { if ((S[t][id] || 0) === sent[k][id]) delete S.dd[k][id]; } });
     if (sendCfg && (S.cfgT || 0) === cfgSent) S.dd.cfg = 0;
     KN().save(true);
     setStatus(dirtyCount(S) ? "pending" : "synced");
@@ -196,7 +206,7 @@ function attach(u) {
   if (!user) { setStatus("out"); return; }
   const S = KN().S; ensure(S);
   // 이 기기에서 다른 계정을 쓰던 기록이면 섞지 않고 새 계정 기록으로 바꿉니다.
-  if (S.owner && S.owner !== user.uid) { S.stars = {}; S.stT = {}; S.dd = { st: {} }; S.cfgT = 0; }
+  if (S.owner && S.owner !== user.uid) { S.stars = {}; S.stT = {}; S.skip = {}; S.skT = {}; S.dd = { st: {}, sk: {} }; S.cfgT = 0; }
   S.owner = user.uid; KN().save(true); KN().refresh();
   setStatus("syncing");
   let first = true;
@@ -205,10 +215,12 @@ function attach(u) {
     const ls = (data && data.ls) || {};
     if (first) {
       first = false;
-      const rst = ls.st || {};
       // 서버보다 이 기기 기록이 더 최근이면 올릴 목록에 넣음
-      for (const id in S.stT) { const r = rst[id]; if (!r || (S.stT[id] || 0) > (r.t || 0)) S.dd.st[id] = 1; }
-      for (const id in S.stars) { if (!S.stT[id] && !rst[id]) { S.stT[id] = Date.now(); S.dd.st[id] = 1; } }
+      MARKS.forEach(([k, v, t]) => {
+        const rm = ls[k] || {};
+        for (const id in S[t]) { const r = rm[id]; if (!r || (S[t][id] || 0) > (r.t || 0)) S.dd[k][id] = 1; }
+        for (const id in S[v]) { if (!S[t][id] && !rm[id]) { S[t][id] = Date.now(); S.dd[k][id] = 1; } }
+      });
       if (S.cfgT && (!ls.cfg || S.cfgT > (ls.cfg.t || 0))) S.dd.cfg = 1;
     }
     const changed = mergeRemote(ls);
