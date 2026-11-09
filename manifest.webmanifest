@@ -1,0 +1,16 @@
+{
+  "name": "간호 암기 목록",
+  "short_name": "간호 암기 듣기",
+  "description": "프리클리닉 활력징후 측정, 수액 계산 공식 등 목록형 연속 듣기 암기 앱",
+  "lang": "ko",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#C4E8D6",
+  "theme_color": "#1F6FA8",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

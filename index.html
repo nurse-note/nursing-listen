@@ -1,0 +1,1027 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>간호 암기 목록</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#1F6FA8">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="간호 암기 듣기">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&family=Noto+Sans+KR:wght@400;500;700&display=swap">
+<style>
+:root{
+  --bg:#F2F5F8;--surface:#FFFFFF;--surface-2:#EAF0F5;--line:#D7E0E8;--ink:#14304A;--muted:#5A6C7D;
+  --accent:#1F6FA8;--accent-ink:#FFFFFF;--accent-soft:#DCEBF6;
+  --say:#0F5E8C;--say-soft:#E6F1F9;--sup:#7A4FB0;--sup-soft:#EFE7F8;
+  --crit:#C23B35;--fix:#B9780A;--fix-soft:#FBEFD3;--chk:#1B8A5A;--chk-soft:#DDF3E8;
+  --star:#D99A00;--cur:#FFF6D6;--cur-line:#E3AE4A;
+  --shadow:0 1px 2px rgba(20,48,74,.06),0 6px 18px rgba(20,48,74,.07);
+  --font-body:"Malgun Gothic","맑은 고딕","Noto Sans KR","Apple SD Gothic Neo",sans-serif;
+  --font-mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root{
+  --bg:#0E1620;--surface:#172230;--surface-2:#1F2D3D;--line:#2A3B4D;--ink:#E5EDF5;--muted:#94A7B9;
+  --accent:#6DB2E8;--accent-ink:#0B1722;--accent-soft:#1C3347;
+  --say:#8CC8F0;--say-soft:#18304A;--sup:#C3A2EC;--sup-soft:#2C2240;
+  --crit:#EF7D77;--fix:#E3AE4A;--fix-soft:#3B2E14;--chk:#4CC38A;--chk-soft:#173A2B;
+  --star:#F0B93A;--cur:#33290F;--cur-line:#E3AE4A;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 6px 18px rgba(0,0,0,.35);color-scheme:dark}}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:15px;line-height:1.55;
+  padding-left:max(14px,env(safe-area-inset-left,0px));padding-right:max(14px,env(safe-area-inset-right,0px));
+  -webkit-text-size-adjust:100%;word-break:keep-all;overflow-wrap:anywhere}
+button,select,input{font:inherit;color:inherit}
+button{cursor:pointer}
+button:focus-visible,select:focus-visible,input:focus-visible,[tabindex]:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.wrap{max-width:680px;margin:0 auto}
+[hidden]{display:none!important}
+
+/* header */
+.top{position:sticky;top:0;z-index:20;background:var(--surface);border-bottom:1px solid var(--line);
+  margin:0 calc(-1*max(14px,env(safe-area-inset-left,0px)));padding:calc(10px + env(safe-area-inset-top,0px)) max(14px,env(safe-area-inset-right,0px)) 8px max(14px,env(safe-area-inset-left,0px))}
+.top-in{max-width:680px;margin:0 auto}
+h1{font-size:17px;margin:0;letter-spacing:-.01em}
+.sub{font-size:12px;color:var(--muted);margin:2px 0 8px}
+.search{display:flex;gap:8px}
+.search input{flex:1;min-width:0;border:1px solid var(--line);background:var(--bg);border-radius:10px;padding:8px 12px;min-height:40px;font-size:15px}
+.chips{display:flex;gap:6px;overflow-x:auto;padding:8px 0 2px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:0 0 auto;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:6px 12px;font-size:13px;min-height:34px;white-space:nowrap}
+.chip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);font-weight:700}
+.chip small{opacity:.75;margin-left:3px;font-variant-numeric:tabular-nums}
+
+main{padding:12px 0 calc(150px + env(safe-area-inset-bottom,0px))}
+body.home main{padding-bottom:calc(24px + env(safe-area-inset-bottom,0px))}
+
+.hrow{display:flex;align-items:center;gap:8px}
+.back{border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:4px 10px;min-height:34px;font-size:13.5px;font-weight:600;color:var(--accent);flex:0 0 auto}
+.deck{display:block;width:100%;text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:16px;margin-bottom:10px;box-shadow:var(--shadow)}
+.deck .dn{font-size:17px;font-weight:700;display:flex;align-items:center;gap:8px}
+.deck .dn i{width:10px;height:10px;border-radius:3px;display:inline-block;flex:0 0 auto}
+.deck .ds{font-size:13px;color:var(--muted);margin-top:3px}
+.deck .dm{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:12.5px;color:var(--muted);margin-top:8px;font-variant-numeric:tabular-nums}
+.deck .dm b{color:var(--ink)}
+.vwarn{background:var(--fix-soft);border:1px solid var(--fix);color:var(--ink);border-radius:14px;padding:12px 14px;margin-bottom:12px;font-size:14px;line-height:1.6}
+.vwarn b{color:var(--fix)}
+.vwarn ol{margin:6px 0 0;padding-left:20px}
+.vwarn code{font-family:var(--font-mono);font-size:12.5px;background:var(--surface);border-radius:6px;padding:1px 5px;word-break:break-all}
+.acct{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:14px;margin-bottom:12px;box-shadow:var(--shadow)}
+.acct:empty{display:none}
+.acct-t{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:4px 10px}
+.acct-st{font-size:12.5px;color:var(--muted)} .acct-st.ok{color:var(--chk)} .acct-st.bad{color:var(--crit)}
+.acct-btns{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.abtn{border:1px solid var(--line);background:var(--surface);border-radius:12px;padding:9px 14px;min-height:42px;font-weight:600;font-size:14px}
+.abtn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.abtn.ghost{border-color:transparent;background:transparent;color:var(--muted);font-weight:500}
+.abtn:disabled{opacity:.5}
+.acct-form{display:grid;gap:8px;margin-top:10px}
+.ainp{border:1px solid var(--line);background:var(--bg);border-radius:10px;padding:9px 12px;min-height:42px;font-size:15px;width:100%}
+.acct-err{color:var(--crit);font-size:13px;margin:8px 0 0}
+.src{font-size:12.5px;color:var(--muted);background:var(--surface);border:1px dashed var(--line);border-radius:12px;padding:10px 12px;margin-top:12px}
+.src a{color:var(--accent)}
+/* settings */
+details.set{background:var(--surface);border:1px solid var(--line);border-radius:14px;margin-bottom:12px;box-shadow:var(--shadow)}
+details.set summary{list-style:none;padding:12px 14px;font-weight:700;display:flex;justify-content:space-between;align-items:center;cursor:pointer}
+details.set summary::-webkit-details-marker{display:none}
+details.set summary span{font-weight:400;font-size:12px;color:var(--muted)}
+.set-body{padding:0 14px 14px;display:grid;gap:12px}
+.srow{display:grid;gap:5px}
+.srow>label,.srow>.lab{font-size:12.5px;color:var(--muted)}
+.seg{display:flex;flex-wrap:wrap;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--surface)}
+.seg button{flex:1 1 auto;border:0;background:transparent;padding:7px 10px;font-size:13px;min-height:38px}
+.seg button+button{border-left:1px solid var(--line)}
+.seg button[aria-pressed="true"]{background:var(--accent-soft);color:var(--accent);font-weight:700}
+.tg{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:14px;padding:2px 0}
+.tg small{display:block;font-size:12px;color:var(--muted)}
+.sw{appearance:none;-webkit-appearance:none;flex:0 0 auto;width:46px;height:28px;border-radius:999px;background:var(--line);position:relative;margin:0;cursor:pointer;transition:background .2s}
+.sw::after{content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.25);transition:transform .2s}
+.sw:checked{background:var(--accent)}
+.sw:checked::after{transform:translateX(18px)}
+select{border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:8px 10px;min-height:40px;width:100%}
+.note{font-size:12.5px;color:var(--muted);margin:0}
+.note.warn{color:var(--fix)}
+
+/* section heads */
+.sh{font-size:13px;font-weight:700;color:var(--muted);margin:18px 2px 8px;display:flex;align-items:center;gap:8px}
+.sh::after{content:"";flex:1;height:1px;background:var(--line)}
+
+/* items */
+.item{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 12px 10px 12px;margin-bottom:8px;box-shadow:var(--shadow);scroll-margin:150px 0 170px;transition:background .25s,border-color .25s}
+.item.cur{background:var(--cur);border-color:var(--cur-line);box-shadow:0 0 0 2px var(--cur-line)}
+.ih{display:flex;align-items:center;gap:8px}
+.no{font-family:var(--font-mono);font-weight:600;font-size:14px;min-width:38px;height:28px;padding:0 8px;border-radius:8px;background:var(--surface-2);display:inline-grid;place-items:center;font-variant-numeric:tabular-nums;white-space:nowrap}
+.no.crit{color:var(--crit)}
+.kind{font-size:12px;color:var(--muted);flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ib{border:0;background:transparent;width:38px;height:38px;border-radius:10px;display:inline-grid;place-items:center;color:var(--muted);flex:0 0 auto}
+.ib svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linejoin:round;stroke-linecap:round}
+.ib.star[aria-pressed="true"]{color:var(--star)}
+.ib.star[aria-pressed="true"] svg{fill:currentColor}
+.it{margin:8px 2px 0;font-size:15.5px}
+.it ul{margin:2px 0 0;padding-left:20px}
+.it li{margin:1px 0}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:3px 12px;margin:8px 2px 0;font-size:15px}
+.kv dt{color:var(--muted);font-size:13px;padding-top:1px}
+.kv dd{margin:0}
+.lines{display:grid;gap:6px;margin-top:8px}
+.say{margin:0;background:var(--say-soft);color:var(--say);border-radius:12px;padding:8px 12px;font-weight:700;font-size:15.5px;position:relative}
+.say.pt{background:var(--surface-2);color:var(--ink);font-weight:500}
+.say .who{font-size:12px;font-weight:700;margin-right:6px;color:var(--muted)}
+.badge{display:inline-block;font-size:11px;font-weight:700;border-radius:6px;padding:1px 6px;margin-left:6px;vertical-align:1px;white-space:nowrap}
+.badge.sup{background:var(--sup-soft);color:var(--sup)}
+.say.masked{color:transparent;text-shadow:0 0 10px rgba(15,94,140,.55);user-select:none;cursor:pointer}
+.say.masked .badge,.say.masked .who{visibility:hidden}
+.say.masked::after{content:"탭해서 보기";position:absolute;inset:0;display:grid;place-items:center;color:var(--say);font-size:13px;font-weight:600;text-shadow:none}
+.more{margin-top:8px;display:grid;gap:6px}
+.act{font-size:14px;color:var(--muted);margin:0;padding-left:2px}
+.act b{color:var(--sup);font-weight:700;font-size:12px;margin-right:4px}
+.tip{font-size:13.5px;margin:0;border-radius:10px;padding:7px 10px}
+.tip.k2{background:var(--fix-soft)}
+.tip.k3{background:var(--chk-soft)}
+.tip.k1{background:var(--accent-soft)}
+.tip.k0{background:var(--surface-2)}
+.tip b{font-size:12px;margin-right:4px}
+.foot{display:flex;justify-content:space-between;align-items:center;margin-top:6px}
+.tog{border:0;background:transparent;color:var(--muted);font-size:12.5px;padding:6px 4px;min-height:34px}
+.here{border:1px solid var(--line);background:var(--surface);border-radius:999px;font-size:12.5px;padding:4px 12px;min-height:32px;color:var(--accent);font-weight:600}
+.empty{text-align:center;color:var(--muted);padding:30px 12px;background:var(--surface);border:1px dashed var(--line);border-radius:14px}
+.notice{text-align:center;color:var(--muted);font-size:12.5px;margin:22px 0 6px;line-height:1.7}
+
+/* player */
+.player{position:fixed;left:0;right:0;bottom:0;z-index:30;background:var(--surface);border-top:1px solid var(--line);
+  padding:8px max(14px,env(safe-area-inset-right,0px)) calc(10px + env(safe-area-inset-bottom,0px)) max(14px,env(safe-area-inset-left,0px));box-shadow:0 -4px 16px rgba(20,48,74,.08)}
+.pl-in{max-width:680px;margin:0 auto}
+.now{display:flex;align-items:center;gap:8px;font-size:13px;min-height:22px}
+.now .lbl{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.now .cnt{font-family:var(--font-mono);color:var(--muted);font-size:12px;font-variant-numeric:tabular-nums}
+.ctr{display:flex;align-items:center;justify-content:space-between;gap:6px;margin-top:6px}
+.cb{border:1px solid var(--line);background:var(--surface);border-radius:12px;min-width:46px;height:46px;display:inline-grid;place-items:center;padding:0 10px;font-size:12.5px;font-weight:600}
+.cb svg{width:22px;height:22px;fill:currentColor}
+.cb.play{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);min-width:64px;height:52px;border-radius:16px}
+.cb.play svg{width:26px;height:26px}
+.cb[aria-pressed="true"]{background:var(--accent-soft);color:var(--accent);border-color:var(--accent-soft)}
+.st{font-size:11.5px;color:var(--muted);margin-top:5px;text-align:center;min-height:16px}
+
+/* sleep overlay */
+.night{position:fixed;inset:0;z-index:50;background:#000;color:#3a3a3a;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;text-align:center;padding:24px;user-select:none;-webkit-user-select:none}
+.night .nl{font-size:18px;color:#4a4a4a;max-width:520px}
+.night .nh{font-size:13px;color:#333}
+</style>
+</head>
+<body>
+<header class="top"><div class="top-in">
+  <div class="hrow"><button class="back" id="bBack" hidden aria-label="목록으로">‹ 목록</button><h1 id="hTitle">간호 암기 목록</h1></div>
+  <p class="sub" id="hSub">듣고 싶은 목록을 골라 주세요</p>
+  <div id="deckTools" hidden>
+  <div class="search"><input id="q" type="search" placeholder="검색 (예: 커프, 15초, 귓바퀴)" aria-label="검색"></div>
+  <div class="chips" id="chips" role="group" aria-label="보기 범위"></div>
+  </div>
+</div></header>
+
+<main class="wrap">
+  <div class="vwarn" id="vwarn" hidden></div>
+  <div id="acct"></div>
+  <section id="home"></section>
+  <section id="deckView" hidden>
+  <details class="set" id="setBox">
+    <summary>재생 설정 <span id="setSum"></span></summary>
+    <div class="set-body">
+      <div class="srow"><span class="lab">읽을 내용</span>
+        <div class="seg" data-key="mode"><button data-v="all">항목 + 대사</button><button data-v="lines">대사만</button><button data-v="items">항목만</button></div></div>
+      <div class="srow"><span class="lab">순서</span>
+        <div class="seg" data-key="order"><button data-v="seq">정방향</button><button data-v="rand">랜덤</button></div></div>
+      <div class="srow"><span class="lab">속도</span>
+        <div class="seg" data-key="rate"><button data-v="0.7">느리게</button><button data-v="0.9">보통</button><button data-v="1.1">빠르게</button></div></div>
+      <div class="srow"><span class="lab">한 항목 반복</span>
+        <div class="seg" data-key="rep"><button data-v="1">1번</button><button data-v="2">2번</button><button data-v="3">3번</button></div></div>
+      <div class="srow"><span class="lab">항목 사이 쉬는 시간</span>
+        <div class="seg" data-key="gap"><button data-v="800">짧게</button><button data-v="1800">보통</button><button data-v="3500">길게</button></div></div>
+      <label class="tg"><span>동작·예시도 읽기<small>괄호 속 동작, 측정값 예시</small></span><input type="checkbox" class="sw" data-key="acts"></label>
+      <label class="tg"><span>대사 전에 3초 떠올리기<small>항목을 읽고 3초 쉰 뒤 대사를 읽어요</small></span><input type="checkbox" class="sw" data-key="recall"></label>
+      <label class="tg"><span>화면 따라가기<small>읽는 항목으로 이동하고 자동으로 펼쳐요</small></span><input type="checkbox" class="sw" data-key="follow"></label>
+      <label class="tg"><span>대사 가리기<small>스스로 떠올린 뒤 탭해서 확인 (읽는 중인 항목은 보여요)</small></span><input type="checkbox" class="sw" data-key="mask"></label>
+      <label class="tg"><span>영어 단어는 영어 음성으로<small>끄면 영어 단어까지 모두 한국어 음성으로 읽어요</small></span><input type="checkbox" class="sw" data-key="enVoice"></label>
+      <div class="srow"><label for="timer">끄기 타이머</label>
+        <select id="timer"><option value="0">끄지 않음 (무한 반복)</option><option value="30">30분 뒤</option><option value="60">1시간 뒤</option><option value="120">2시간 뒤</option><option value="240">4시간 뒤</option><option value="480">8시간 뒤</option></select></div>
+      <div class="srow"><label for="voice">한국어 음성</label><select id="voice"><option value="">자동 선택</option></select>
+        <button class="here" id="bTest" type="button" style="justify-self:start;margin-top:4px">음성 테스트</button>
+        <p class="note" id="voiceInfo"></p></div>
+      <p class="note">밤새 틀어둘 때: 충전기를 꽂고, 재생 중에는 화면이 꺼지지 않게 유지해요. 휴대폰 화면이 꺼지거나 다른 앱으로 가면 브라우저 음성이 멈출 수 있어요. 아래 <b>취침</b> 버튼을 누르면 화면을 검게 덮은 채 계속 읽어요.</p>
+    </div>
+  </details>
+
+  <div id="list"></div>
+  <div id="deckSrc"></div>
+  </section>
+  <p class="notice">오류나 잘못된 내용은 배포자에게 알려 주세요.<br><span id="ver"></span></p>
+</main>
+
+<div class="player" id="player" role="region" aria-label="연속 재생" hidden>
+  <div class="pl-in">
+    <div class="now"><span class="lbl" id="nowLbl">▶ 를 누르면 보이는 목록을 처음부터 끝없이 반복해서 읽어요</span><span class="cnt" id="nowCnt"></span></div>
+    <div class="ctr">
+      <button class="cb" id="bOrder" aria-pressed="false" title="랜덤">랜덤</button>
+      <button class="cb" id="bPrev" aria-label="이전"><svg viewBox="0 0 24 24"><path d="M6 5h2v14H6zM20 5v14L9 12z"/></svg></button>
+      <button class="cb play" id="bPlay" aria-label="재생"><svg viewBox="0 0 24 24" id="playIco"><path d="M7 4v16l13-8z"/></svg></button>
+      <button class="cb" id="bNext" aria-label="다음"><svg viewBox="0 0 24 24"><path d="M16 5h2v14h-2zM4 5v14l11-7z"/></svg></button>
+      <button class="cb" id="bNight" title="취침 모드">취침</button>
+    </div>
+    <div class="st" id="st"></div>
+  </div>
+</div>
+
+<div class="night" id="night" hidden>
+  <div class="nl" id="nightLbl"></div>
+  <div class="nh">화면을 두 번 누르면 돌아가요</div>
+</div>
+
+<script>
+"use strict";
+const VERSION = "1.2.0", VDATE = "2026-11-09";
+/* ===== 데이터 =====
+   lab: 화면 번호 / sl: 읽을 번호 / crit: 원본 * 표시
+   t: 본문(원본 표기) / list: 목록 / kv: 표 / st: 본문 읽기용(선택)
+   lines: 대사 [{t, sup:정리본 보충, who:'환자'}] / acts: 동작·예시 [{t, sup}]
+   tips: [{k:1 원본대로 고침,2 정리본 수정 유지,3 원본 의심,0 참고, t}]
+   {en:...} = 영어로 읽기 */
+const SECS_VS = [
+  {k:"info", n:"기본 정보"},
+  {k:"steps", n:"수행항목·대사"},
+  {k:"record", n:"간호기록·평가표"},
+  {k:"tpr", n:"T.P.R. CHART"}
+];
+const D_VS = [
+/* ---------- 기본 정보 ---------- */
+{id:"i01",sec:"info",lab:"실기",sl:"실기항목",kind:"실기항목 · 수행시간",
+ kv:[["실기항목","활력징후 측정"],["수행시간","10분"]],
+ st:"실기항목은 활력징후 측정. 수행시간은 10분."},
+{id:"i02",sec:"info",lab:"목표",sl:"성취목표",kind:"성취목표",
+ list:["체온, 맥박, 호흡, 혈압을 정확하게 설명할 수 있다.","체온, 맥박, 호흡, 혈압을 정확하게 측정할 수 있다.","체온, 맥박, 호흡, 혈압의 측정결과를 정확하게 기록할 수 있다."],
+ tips:[{k:1,t:"정리본에 빠져 있어 원본(부록 2)대로 넣었어요."}]},
+{id:"i03",sec:"info",lab:"선행",sl:"관련 선행지식",kind:"관련 선행지식",
+ list:["체온, 맥박, 호흡, 혈압의 정상범위","체온, 맥박, 호흡, 혈압에 영향을 미치는 요인"],
+ tips:[{k:1,t:"정리본에 빠져 있어 원본(부록 2)대로 넣었어요."}]},
+{id:"i04",sec:"info",lab:"물품",sl:"필요 물품",kind:"필요장비 및 물품",
+ list:["아네로이드 혈압계","청진기(교육용 청진기 준비)","초침이 있는 시계","전자 체온계/고막 체온계(1회용 탐침 덮개)","소독솜, 트레이, 손소독제, 간호기록지, 메모지"],
+ st:"필요 물품. 아네로이드 혈압계. 청진기, 교육용 청진기 준비. 초침이 있는 시계. 전자 체온계 또는 고막 체온계, 1회용 탐침 덮개. 소독솜, 트레이, 손소독제, 간호기록지, 메모지."},
+{id:"i05",sec:"info",lab:"장비",sl:"장비",kind:"필요장비 및 물품",
+ t:"혈압측정용 팔 모형, 일반 의료폐기물 전용용기, 일반 쓰레기통"},
+{id:"i06",sec:"info",lab:"상황",sl:"상황",kind:"상황 (대상자)",
+ kv:[["대상자","홍길동 (등록번호 : 173658)"],["생년월일","1970년 2월 10일"],["성별","남자"],["진단명","Acute bronchitis"],["학생간호사","김예린"],["담당의사","나중부"]],
+ st:"대상자는 홍길동, 등록번호 일 칠 삼 육 오 팔. 생년월일 1970년 2월 10일, 남자. 진단명 {en:Acute bronchitis}. 학생간호사 김예린, 담당의사 나중부."},
+{id:"i07",sec:"info",lab:"처방",sl:"주호소와 의사처방",kind:"c.c · 의사처방 (간호기록지)",
+ kv:[["c.c","cough, sputum, fever"],["의사처방","cough syrup 60cc #3/ day PO, Ambroxol HCL 30mg #3/day PO"]],
+ st:"주호소, {en:cough, sputum, fever}. 의사처방, {en:cough syrup} 60 씨씨 하루 3회 경구, {en:Ambroxol HCL} 30 밀리그램 하루 3회 경구.",
+ tips:[{k:0,t:"c.c = chief complaint(주호소) · PO = per os(경구) · #3/day = 하루 3회"},
+       {k:3,t:"원본 표기 'Ambroxol HCL' 유지 · 표준 표기는 'HCl'(염산염)이에요."}]},
+{id:"i08",sec:"info",lab:"측정",sl:"측정 상황",kind:"측정 상황",sup:true,
+ t:"기상하여 침대에 누워 있는 대상자에게 8 am에 침상에 누운 상태에서 활력징후(고막체온, 요골맥박, 호흡, 상완혈압)를 측정한다. 혈압은 처음(Initial) 측정 방법으로 측정한다.",
+ st:"측정 상황. 기상하여 침대에 누워 있는 대상자에게 오전 8시에, 침상에 누운 상태에서 활력징후를 측정한다. 고막체온, 요골맥박, 호흡, 상완혈압. 혈압은 처음, 이니셜 측정 방법으로 측정한다.",
+ tips:[{k:0,t:"정리본 보충 내용이에요(원본 간호기록 예시를 바탕으로 정리)."}]},
+{id:"i09",sec:"info",lab:"값",sl:"측정값",kind:"측정값 (간호기록 예시 기준)",sup:true,
+ kv:[["체온 (T)","36.5℃ · 오른쪽 고막"],["맥박 (P)","72회 · 요골동맥, 1분간"],["호흡 (R)","20회 · 맥박 측정 자세 유지, 1분간"],["혈압 (BP)","120/80mmHg · 오른팔 상완동맥, 촉지 후 청진 (예: 촉지 시 116mmHg에서 맥박 재촉지)"]],
+ st:"측정값. 체온 36.5도, 오른쪽 고막. 맥박 72회, 요골동맥 1분간. 호흡 20회, 맥박 측정 자세 그대로 1분간. 혈압 120에 80 밀리미터 수은주, 오른팔 상완동맥, 촉지 후 청진.",
+ tips:[{k:0,t:"정리본 보충 내용이에요. 원본 간호기록 예시는 120/80mmHg, 72회, 20회, 36.5℃이고, 116mmHg는 정리본의 예시 값이에요."}]},
+
+/* ---------- 수행항목 ---------- */
+{id:"s01",sec:"steps",lab:"1",sl:"1번",
+ t:"물과 비누로 40~60초 동안 손위생을 실시한다(또는 알코올이 첨가된 손 소독제를 사용하여 20초 이상 손소독을 실시한다).",
+ tips:[{k:1,t:"정리본은 '손위생을 실시한다.'로 줄여 있어 원본 문장 전체로 고쳤어요."}]},
+{id:"s02",sec:"steps",lab:"2",sl:"2번",
+ t:"필요한 물품을 준비하고, 작동여부를 확인한다. (청진기, 체온계, 혈압계)",
+ lines:[{t:"필요한 물품을 준비합니다."}]},
+{id:"s03",sec:"steps",lab:"3",sl:"3번",
+ t:"준비한 물품을 가지고 대상자에게 가서 간호사 자신을 소개한다.",
+ lines:[{t:"안녕하십니까? 저는 학생간호사 김예린입니다."}],
+ tips:[{k:1,t:"정리본 '안녕하세요 학생간호사 김예린입니다.' → 원본 '안녕하십니까? 저는 학생간호사 OOO입니다.'대로 고쳤어요."}]},
+{id:"s04",sec:"steps",lab:"4",sl:"4번",
+ t:"손소독제로 손위생을 실시한다.",
+ tips:[{k:1,t:"정리본은 '손위생을 실시한다.'로 되어 있어 원본대로 '손소독제로'를 넣었어요."}]},
+{id:"s05",sec:"steps",lab:"5*",sl:"5번",crit:true,
+ t:"대상자의 이름, 등록번호, 생년월일 중 두 가지를 개방형으로 묻고 대답을 들은 후 대상자의 입원팔찌와 대조하여 대상자(이름, 등록번호)가 정확한지 확인하여 환자리스트(또는 처방지)와도 대조하여 대상자를 재확인한다.",
+ lines:[{t:"환자분 성함/생년월일이 어떻게 되십니까?",s:"환자분 성함, 생년월일이 어떻게 되십니까?"},{t:"홍길동입니다. 1970년 2월 10일입니다.",who:"환자",sup:true},{t:"환자 팔찌로 등록번호를 확인하겠습니다."},{t:"네, 홍길동 환자가 맞으시네요."}],
+ tips:[{k:1,t:"정리본 '성함과 생년월일이 어떻게 되세요?' → 원본 '성함/생년월일이 어떻게 되십니까?'대로 고쳤어요."},
+       {k:0,t:"환자 대답은 정리본 보충 내용이에요."}]},
+{id:"s06",sec:"steps",lab:"6",sl:"6번",
+ t:"대상자에게 체온, 맥박, 호흡, 혈압을 측정하는 목적과 절차를 설명한다.",
+ lines:[{t:"홍길동님, 지금 몸 상태를 확인하기 위해 체온, 맥박, 호흡, 혈압을 측정하겠습니다. 귀에서 체온을 재고, 손목에서 맥박을 확인한 다음, 팔에 커프를 감아 혈압을 측정하겠습니다. 10분 정도 걸리고, 측정하는 동안 편하게 누워 계시면 됩니다.",sup:true}],
+ tips:[{k:0,t:"원본에는 이 항목의 대사가 없어요. 대사는 정리본 보충 내용이에요."}]},
+{id:"s07",sec:"steps",lab:"7",sl:"7번",
+ t:"용기에서 탐침 덮개를 꺼낸 후 탐침 덮개를 고막체온계에 덮는다.",
+ acts:[{t:"1회용 탐침 덮개를 고막체온계에 씌움",sup:true}]},
+{id:"s08",sec:"steps",lab:"8*",sl:"8번",crit:true,
+ t:"대상자의 머리를 한 쪽으로 돌려 체온을 측정할 귀를 노출시킨 후 귓바퀴를(성인의 귓바퀴는 후상방으로, 소아는 후하방으로) 당긴 다음 탐침을 부드럽게 외이도로 삽입하여 체온을 측정한다.",
+ lines:[{t:"오른쪽 귀에 고막체온계를 넣겠습니다. 약간의 불편감이 있을 수 있습니다."}],
+ acts:[{t:"성인이므로 귓바퀴를 후상방으로 당김",sup:true}],
+ tips:[{k:2,t:"※ 원본 표기는 '오른 쪽 귀에'(띄어 씀)예요. 정리본의 '오른쪽'을 유지했어요."}]},
+{id:"s09",sec:"steps",lab:"9",sl:"9번",
+ t:"탐침 덮개를 제거 한 후 체온을 메모한다.",
+ lines:[{t:"홍길동님의 체온은 36.5도로 정상입니다."}],
+ acts:[{t:"메모: T 36.5℃",sup:true}],
+ tips:[{k:3,t:"원본 표기 '제거 한 후' 유지 · 표준 띄어쓰기는 '제거한 후'예요."}]},
+{id:"s10",sec:"steps",lab:"10",sl:"10번",
+ t:"대상자의 팔을 편한 자세로 놓고, 대상자의 이불을 내려 가슴이 보이도록 한다.",
+ lines:[{t:"맥박을 측정하기 위해서 이불을 조금만 내리겠습니다."}]},
+{id:"s11",sec:"steps",lab:"11*",sl:"11번",crit:true,
+ t:"손가락으로 요골동맥을 찾아서 그 위에 놓고, 맥박 부위를 확인한 후, 맥박을 측정한다. [처음 입원 시] 1분간 호흡수를 측정한다. [입원 중 규칙적임을 확인한 후] 30초 동안 맥박수를 측정한 후 2배를 한다.",
+ lines:[{t:"맥박을 측정하겠습니다."}],
+ acts:[{t:"1분간 측정 → 72회",sup:true}],
+ tips:[{k:3,t:"원본 표기 유지 · 맥박 항목인데 '[처음 입원 시] 1분간 호흡수를 측정한다'로 적혀 있어요. 12번 문장과 같아서, 맥박 항목이라면 '맥박수'인지 담당 교수님께 확인해 보세요."}]},
+{id:"s12",sec:"steps",lab:"12",sl:"12번",
+ t:"맥박을 측정한 후 동맥에 손을 그대로 댄 채로 호흡을 측정한다. [처음 입원 시] 1분간 호흡수를 측정한다. [입원 중] 30초 동안 호흡수를 측정한 후 2배를 한다.",
+ acts:[{t:"대사 없이 요골동맥에 손을 댄 채로 1분간 측정 → 20회",sup:true}]},
+{id:"s13",sec:"steps",lab:"13",sl:"13번",
+ t:"측정된 맥박과 호흡, 체온을 메모한다.",
+ lines:[{t:"홍길동님의 맥박은 72회, 호흡은 20회, 체온은 36.5도로 정상입니다."}],
+ acts:[{t:"메모: P 72회, R 20회, T 36.5℃",sup:true}],
+ tips:[{k:2,t:"※ 원본 표기는 '○○○님의 맥박은 ○○○도로 정상입니다.'예요. 맥박 단위가 '도'로 적혀 있어, 정리본의 '맥박은 72회, 호흡은 20회, 체온은 36.5도로'를 유지했어요."}]},
+{id:"s14",sec:"steps",lab:"14",sl:"14번",
+ t:"대상자가 편안한 자세를 취하게 한 후, 대상자의 팔을 심장과 같은 높이로 놓고 팔을 노출시킨다.",
+ lines:[{t:"오른팔에서 혈압을 측정하겠습니다."}]},
+{id:"s15",sec:"steps",lab:"15*",sl:"15번",crit:true,
+ t:"팔오금 상완동맥 2-3Cm위에 커프의 bulb에 연결된 줄이 상완동맥과 평행이 되게 놓이도록 하고 손가락 하나가 들어갈 정도의 여유를 주고 감는다.",
+ st:"팔오금 상완동맥 2에서 3센티미터 위에, 커프의 벌브에 연결된 줄이 상완동맥과 평행이 되게 놓이도록 하고, 손가락 하나가 들어갈 정도의 여유를 주고 감는다.",
+ tips:[{k:3,t:"원본 표기 '2-3Cm위에' 유지 · 표준 표기는 '2~3cm 위에'예요."}]},
+{id:"s16",sec:"steps",lab:"16*",sl:"16번",crit:true,
+ t:"손가락으로 상완동맥을 찾아 그 위에 청진기를 대고, 움직이지 않게 손으로 고정한다.",
+ acts:[{t:"처음 측정이므로 아래 ※ 참고 1)~4)를 15번 직후에 먼저 시행한 뒤 청진기를 댐",sup:true}]},
+{id:"s16r",sec:"steps",lab:"16 ※",sl:"16번 참고",crit:true,kind:"처음(Initial) 혈압측정",
+ t:"※ 참고) 처음(Initial) 혈압측정인 경우 다음의 사항을 15번 후에 먼저 시행한다.",
+ st:"참고. 처음, 이니셜 혈압측정인 경우, 다음 사항을 15번 후에 먼저 시행한다.",
+ lines:[{t:"정확한 측정을 위해 혈압을 2번 재겠습니다."}],
+ tips:[{k:2,t:"※ 원본은 아래 네 단계 번호가 모두 '1.'로 적혀 있어요. 정리본의 1)~4) 번호를 유지했어요."}]},
+{id:"s16a",sec:"steps",lab:"16-1)",sl:"16번 참고 1번",crit:true,kind:"처음(Initial) 혈압측정",
+ t:"한 손으로 혈압계의 조절 밸브를 잠그고 압력 밸브를 눌러 커프에 공기를 넣고, 다른 손의 손가락을 상완동맥 또는 요골동맥 위에 올려놓는다.",
+ tips:[{k:3,t:"원본 표기 '압력 밸브를 눌러' 유지 · 17번에서는 같은 동작을 '압력 bulb를 눌러'로 적고 있어요."}]},
+{id:"s16b",sec:"steps",lab:"16-2)",sl:"16번 참고 2번",crit:true,kind:"처음(Initial) 혈압측정",
+ t:"상완동맥 또는 요골동맥을 촉지 하여 맥박이 소실되는 지점에서 혈압계의 눈금을 30mmHg 정도 더 올린다.",
+ acts:[{t:"예: 118mmHg에서 맥박 소실 → 148mmHg까지 올림",sup:true}],
+ tips:[{k:3,t:"원본 표기 '촉지 하여' 유지 · 표준 띄어쓰기는 '촉지하여'예요."}]},
+{id:"s16c",sec:"steps",lab:"16-3)",sl:"16번 참고 3번",crit:true,kind:"처음(Initial) 혈압측정",
+ t:"조절 밸브를 천천히 열어 눈금을 1초에 2mmHg의 속도로 내리면서 상완동맥이나 요골동맥에서의 맥박이 다시 촉지 되는 지점의 눈금을 읽어서 기억한다.",
+ acts:[{t:"예: 116mmHg에서 맥박이 다시 촉지됨 → 116 기억",sup:true}],
+ tips:[{k:3,t:"원본 표기 '촉지 되는' 유지 · 표준 띄어쓰기는 '촉지되는'이에요."}]},
+{id:"s16d",sec:"steps",lab:"16-4)",sl:"16번 참고 4번",crit:true,kind:"처음(Initial) 혈압측정",
+ t:"커프의 공기를 완전히 뺀 후 최소한 15초 동안 기다린다.",
+ lines:[{t:"15초 동안 기다렸다가 한번 더 측정하겠습니다."},{t:"15초가 지났습니다.",pre:"15초 후",s:"15초 후. 15초가 지났습니다."}],
+ tips:[{k:2,t:"※ 원본에서는 '15초 동안 기다렸다가…' 대사가 16번 ※ 참고 1) 옆 칸에 적혀 있어요. 정리본처럼 15초를 기다리는 4) 단계에 두었어요."},
+       {k:3,t:"원본 표기 '한번 더' 유지 · 횟수를 뜻할 때 표준 띄어쓰기는 '한 번 더'예요."}]},
+{id:"s17",sec:"steps",lab:"17*",sl:"17번",crit:true,
+ t:"혈압계의 조절 밸브를 잠그고 압력 bulb를 눌러 혈압계의 눈금이 160-200mmHg까지 올라가게 공기를 넣는다.",
+ lines:[{t:"2번째 혈압을 측정하겠습니다.",s:"두번째 혈압을 측정하겠습니다."}]},
+{id:"s17r",sec:"steps",lab:"17 ※",sl:"17번 참고",crit:true,kind:"처음(Initial) 측정인 경우",
+ t:"※ 처음(Initial) 측정인 경우, 다음의 사항을 시행한다. 혈압계의 조절 밸브를 잠그고 압력 bulb를 눌러 혈압계의 눈금이 상완동맥이나 요골동맥에서의 맥박이 다시 촉지 되었던 지점의 눈금을 기억하여 눈금보다 30mmHg 더 올라가게 혈압계의 눈금을 올린다.",
+ acts:[{t:"116 + 30 = 146mmHg까지 올림",sup:true}],
+ tips:[{k:3,t:"원본 표기 '촉지 되었던' 유지 · 표준 띄어쓰기는 '촉지되었던'이에요."}]},
+{id:"s18",sec:"steps",lab:"18*",sl:"18번",crit:true,
+ t:"조절 밸브를 천천히 열어 1초에 2mmHg씩 눈금을 내리면서 처음 소리가 들리는 지점의 눈금을 읽어서 기억한다.",
+ acts:[{t:"예: 처음 소리 120mmHg (수축기압)",sup:true}]},
+{id:"s19",sec:"steps",lab:"19*",sl:"19번",crit:true,
+ t:"조절 밸브를 천천히 열어 차츰 커프에서 공기를 빼면서 소리가 없어지는 지점의 눈금을 읽어서 기억한다.",
+ lines:[{t:"혈압은 120/80입니다."}],
+ acts:[{t:"예: 소리 소실 80mmHg (이완기압)",sup:true}]},
+{id:"s20",sec:"steps",lab:"20",sl:"20번",
+ t:"조절 밸브를 천천히 열어 커프에서 공기를 완전히 뺀 후 커프를 풀어, 혈압계를 정리한다."},
+{id:"s21",sec:"steps",lab:"21",sl:"21번",t:"대상자의 환의를 정리한다."},
+{id:"s22",sec:"steps",lab:"22",sl:"22번",t:"측정한 혈압을 메모한다.",
+ acts:[{t:"메모: BP 120/80mmHg",sup:true}]},
+{id:"s23",sec:"steps",lab:"23",sl:"23번",
+ t:"청진기의 귀꽂이(Ear piece)와 판막(Diaphragm)을 소독솜으로 닦는다.",
+ st:"청진기의 귀꽂이, {en:Ear piece}, 와 판막, {en:Diaphragm}, 을 소독솜으로 닦는다."},
+{id:"s24",sec:"steps",lab:"24",sl:"24번",
+ t:"물과 비누로 손위생을 실시한다(또는 알코올이 첨가된 손 소독제를 사용하여 20초 이상 손소독을 실시한다).",
+ tips:[{k:1,t:"정리본은 '손위생을 실시한다.'로 줄여 있어 원본 문장 전체로 고쳤어요."}]},
+{id:"s25",sec:"steps",lab:"25",sl:"25번",
+ t:"간호기록지에 호흡, 체온, 맥박, 혈압측정치를 기록한다.",
+ acts:[{t:"간호기록지·T.P.R. CHART에 기록",sup:true}],
+ st:"간호기록지에 호흡, 체온, 맥박, 혈압 측정치를 기록한다."},
+
+/* ---------- 간호기록 ---------- */
+{id:"r01",sec:"record",lab:"머리",sl:"간호기록지 머리칸",kind:"간호기록지 위쪽",
+ kv:[["환자명","홍길동"],["등록번호","173658"],["진단","Acute bronchitis"],["생년월일","1970. 2. 10"],["학생간호사","김예린"],["담당의사","나중부"]],
+ st:"간호기록지 위쪽. 환자명 홍길동, 등록번호 일 칠 삼 육 오 팔, 진단 {en:Acute bronchitis}, 생년월일 1970년 2월 10일, 학생간호사 김예린, 담당의사 나중부."},
+{id:"r02",sec:"record",lab:"기록",sl:"간호기록 예시",kind:"간호기록 (예시)",
+ kv:[["Date","11/20"],["Time","8am"],["간호기록","기상하여 침대에 누워 있음. 침상에 누운 상태에서 활력징후 측정함. 혈압 120/80mmHg, 맥박 72회, 호흡 20회, 체온 36.5℃ 측정됨."],["Sign","SN 김예린"]],
+ st:"간호기록 예시. 11월 20일, 오전 8시. 기상하여 침대에 누워 있음. 침상에 누운 상태에서 활력징후 측정함. 혈압 120에 80 밀리미터 수은주, 맥박 72회, 호흡 20회, 체온 36.5도 측정됨. 서명, 에스엔 김예린.",
+ tips:[{k:1,t:"정리본 '11/4 · 8:00 am · 김예린' → 원본 예시 '11/20 · 8am · SN OOO'대로 고쳤어요(OOO에 이름)."},
+       {k:0,t:"날짜와 시간은 실제로 측정한 때를 적는 칸이에요."}]},
+{id:"r03",sec:"record",lab:"평가표",sl:"평가표 작성",kind:"PRE-CLINIC TEST 평가표",sup:true,
+ kv:[["학번 / 이름","본인 학번 / 김예린 — 평가표 맨 위에 직접 적음"],["평가일 ( )","시험 보는 날짜 — 평가/재평가 중 해당 칸 괄호 안에"],["O / X, 총점, 결과 및 평가자 확인","비워 둠 — 평가자가 작성"]],
+ st:"평가표 작성. 학번과 이름은 평가표 맨 위에 직접 적는다. 평가일은 시험 보는 날짜를, 평가 또는 재평가 중 해당 칸 괄호 안에 적는다. 오엑스, 총점, 결과 및 평가자 확인 칸은 비워 둔다. 평가자가 작성한다.",
+ tips:[{k:0,t:"정리본 보충 내용이에요."}]},
+
+/* ---------- TPR ---------- */
+{id:"t01",sec:"tpr",lab:"번호",sl:"등록번호 칸",kind:"O.P.D.No. / I.P.D.No",sup:true,
+ kv:[["기입값","O.P.D.No. 비움 / I.P.D.No 173658"],["방법","입원환자이므로 입원 등록번호를 I.P.D.No에 적고, 외래번호(O.P.D.No.)는 비워 둠"]],
+ st:"오피디 넘버와 아이피디 넘버. 입원환자이므로 입원 등록번호 일 칠 삼 육 오 팔을 아이피디 넘버에 적고, 외래번호 오피디 넘버는 비워 둔다."},
+{id:"t02",sec:"tpr",lab:"이름",sl:"이름 성별 나이 칸",kind:"Name, Sex, Age",sup:true,
+ kv:[["기입값","홍길동, M, 56"],["방법","환자 이름, 성별(M/F), 만 나이. 1970년 2월 10일생 → 2026년 현재 만 56세"]],
+ st:"네임, 섹스, 에이지. 홍길동, 엠, 56. 환자 이름, 성별, 만 나이를 적는다. 1970년 2월 10일생이므로 만 56세."},
+{id:"t03",sec:"tpr",lab:"병동",sl:"병동 칸",kind:"ward, Dept., Room, Bed No.",sup:true,
+ kv:[["기입값","비움"],["방법","병동·진료과·병실 호수·침대 번호 칸. 교재 상황에 정보가 없으므로 비우고, 시험지에 주어지면 그대로 적음"]],
+ st:"병동, 진료과, 병실, 침대 번호 칸. 교재 상황에 정보가 없으므로 비워 두고, 시험지에 주어지면 그대로 적는다."},
+{id:"t04",sec:"tpr",lab:"날짜",sl:"날짜 칸",kind:"Date",sup:true,
+ kv:[["기입값","11 ／ 20"],["방법","사선 위에 월, 사선 아래에 일. 첫째 칸부터 측정한 날짜를 적음"]],
+ st:"데이트. 사선 위에 월, 사선 아래에 일을 적는다. 첫째 칸부터 측정한 날짜를 적는다.",
+ tips:[{k:1,t:"정리본은 11/4로 적었는데, 원본 간호기록 예시 날짜(11/20)에 맞췄어요."}]},
+{id:"t05",sec:"tpr",lab:"입원",sl:"입원일과 수술후일 칸",kind:"Hospital Days · Post op Days",sup:true,
+ kv:[["기입값","둘 다 비움"],["방법","Hospital Days = 입원 경과일(교재에 입원일 없음) · Post op Days = 수술 후 경과일(수술하지 않은 대상자는 비움)"]],
+ st:"호스피털 데이즈는 입원 경과일 칸. 교재에 입원일이 없으므로 비워 둔다. 포스트 옵 데이즈는 수술 후 경과일 칸. 수술하지 않은 대상자는 비워 둔다."},
+{id:"t06",sec:"tpr",lab:"시간",sl:"시간 칸",kind:"시간 칸 (A.M 6·12 / P.M 6·10)",sup:true,
+ kv:[["기입값","A.M 6"],["방법","하루는 4칸(A.M 6·12, P.M 6·10). 측정 시간(8시)과 가장 가까운 A.M 6 칸에 표시"]],
+ st:"시간 칸. 하루는 4칸, 오전 6시, 12시, 오후 6시, 10시로 나뉜다. 측정 시간 8시와 가장 가까운 오전 6시 칸에 표시한다."},
+{id:"t07",sec:"tpr",lab:"체온",sl:"체온 그래프",kind:"체온 (파란색 점·선)",sup:true,
+ kv:[["기입값","36.5℃"],["방법","오른쪽 C(℃) 눈금 기준 파란색 점, 다음 측정부터 파란 선으로 이음. 큰 칸 1개 = 1℃, 작은 칸 1개 = 0.2℃, 주황색 기준선 = 37℃(98.6℉)"]],
+ st:"체온은 36.5도. 오른쪽 섭씨 눈금 기준으로 파란색 점을 찍고, 다음 측정부터 파란 선으로 잇는다. 큰 칸 1개는 1도, 작은 칸 1개는 0.2도. 주황색 기준선이 37도, 화씨 98.6도."},
+{id:"t08",sec:"tpr",lab:"맥박",sl:"맥박 그래프",kind:"맥박 (빨간색 점·선)",sup:true,
+ kv:[["기입값","72회"],["방법","왼쪽 P 눈금 기준 빨간색 점, 다음 측정부터 빨간 선으로 이음. 큰 칸 1개 = 20회, 작은 칸 1개 = 4회"]],
+ st:"맥박은 72회. 왼쪽 피 눈금 기준으로 빨간색 점을 찍고, 다음 측정부터 빨간 선으로 잇는다. 큰 칸 1개는 20회, 작은 칸 1개는 4회."},
+{id:"t09",sec:"tpr",lab:"호흡",sl:"호흡 칸",kind:"Respiration",sup:true,
+ kv:[["기입값","20"],["방법","그래프가 아니라 해당 시간 칸에 숫자로 적음"]],
+ st:"레스퍼레이션, 호흡은 20. 그래프가 아니라 해당 시간 칸에 숫자로 적는다."},
+{id:"t10",sec:"tpr",lab:"혈압",sl:"혈압 칸",kind:"B.P",sup:true,
+ kv:[["기입값","120 ／ 80"],["방법","날짜 칸마다 사선 칸 4줄, 측정 순서대로 첫째 줄부터. 사선 위 수축기압, 아래 이완기압"]],
+ st:"비피, 혈압은 120에 80. 날짜 칸마다 사선 칸이 4줄 있으며, 측정 순서대로 첫째 줄부터 쓴다. 사선 위에 수축기압, 아래에 이완기압."},
+{id:"t11",sec:"tpr",lab:"기타",sl:"체중 식이 섭취 배설 칸",kind:"B. wt, Diet, Intake, Output",sup:true,
+ kv:[["기입값","비움"],["방법","체중, 식이, 섭취량·배설량을 측정·확인한 경우에만 적음"]],
+ st:"체중, 식이, 섭취량, 배설량 칸은 측정하거나 확인한 경우에만 적는다. 이번에는 비워 둔다."},
+{id:"t12",sec:"tpr",lab:"의사",sl:"담당의사 칸",kind:"Doctor",sup:true,
+ kv:[["기입값","나중부"],["방법","담당의사 이름을 적음"]],
+ st:"닥터 칸에는 담당의사 이름, 나중부를 적는다.",
+ tips:[{k:0,t:"점 모양과 색은 기관·학교마다 기준이 다를 수 있어요. 실습 지침에 정해진 표기법이 있으면 그 기준을 따라요(정리본 안내)."}]}
+];
+
+
+/* ---------- 수액 계산 공식 ---------- */
+const SECS_IV = [{k:"basic",n:"기본 공식"},{k:"set",n:"수액 세트"},{k:"ex",n:"예제"}];
+const D_IV = [
+{id:"f01",sec:"basic",lab:"①",sl:"공식 1",kind:"시간당 주입량 (mL/hr)",
+ t:"시간당 주입량(mL/hr) = 총 주입량(mL) ÷ 주입 시간(hr)",
+ st:"시간당 주입량, 밀리리터 퍼 아워는, 총 주입량 밀리리터를 주입 시간, 시간으로 나눈다.",
+ tips:[{k:0,t:"수액 펌프에는 보통 mL/hr로 입력해요."}]},
+{id:"f02",sec:"basic",lab:"②",sl:"공식 2",kind:"분당 방울 수 (gtt/min)",
+ t:"분당 방울 수(gtt/min) = 총 주입량(mL) × drop factor(gtt/mL) ÷ 주입 시간(분)",
+ st:"분당 방울 수, 지티티 퍼 미닛은, 총 주입량 밀리리터 곱하기 드롭 팩터, 나누기 주입 시간, 분.",
+ tips:[{k:0,t:"시간은 반드시 '분'으로 바꿔서 넣어요. (시간 × 60 = 분)"}]},
+{id:"f03",sec:"basic",lab:"③",sl:"공식 3",kind:"mL/hr → gtt/min",
+ t:"분당 방울 수(gtt/min) = 시간당 주입량(mL/hr) × drop factor(gtt/mL) ÷ 60",
+ st:"시간당 주입량을 알 때 분당 방울 수는, 시간당 주입량 곱하기 드롭 팩터, 나누기 60."},
+{id:"f04",sec:"basic",lab:"④",sl:"공식 4",kind:"gtt/min → mL/hr",
+ t:"시간당 주입량(mL/hr) = 분당 방울 수(gtt/min) × 60 ÷ drop factor(gtt/mL)",
+ st:"분당 방울 수를 알 때 시간당 주입량은, 분당 방울 수 곱하기 60, 나누기 드롭 팩터."},
+{id:"f05",sec:"basic",lab:"⑤",sl:"공식 5",kind:"주입 시간",
+ t:"주입 시간(hr) = 총 주입량(mL) ÷ 시간당 주입량(mL/hr)",
+ st:"주입 시간은, 총 주입량 밀리리터를 시간당 주입량으로 나눈다. 소수점 아래 시간은 60을 곱해 분으로 바꾼다.",
+ tips:[{k:0,t:"예: 2.4시간 → 0.4 × 60 = 24분 → 2시간 24분"}]},
+{id:"f06",sec:"basic",lab:"⑥",sl:"공식 6",kind:"시간 ↔ 분",
+ t:"분 = 시간 × 60 · 시간 = 분 ÷ 60",
+ st:"분은 시간 곱하기 60. 시간은 분 나누기 60."},
+{id:"f07",sec:"set",lab:"세트",sl:"드롭 팩터",kind:"drop factor (gtt/mL)",
+ kv:[["뜻","수액 세트에서 1 mL가 몇 방울인지 나타내는 값 (세트 포장에 적혀 있음)"],["일반(macro) 세트","10 · 15 · 20 gtt/mL"],["미세(micro) 세트","60 gtt/mL"]],
+ st:"드롭 팩터는 수액 세트에서 1 밀리리터가 몇 방울인지 나타내는 값으로, 세트 포장에 적혀 있다. 일반, 매크로 세트는 10, 15, 20 지티티 퍼 밀리리터. 미세, 마이크로 세트는 60 지티티 퍼 밀리리터.",
+ tips:[{k:0,t:"학교 교재·시험지에 drop factor가 주어지면 그 값을 써요."}]},
+{id:"f08",sec:"set",lab:"60",sl:"미세 세트",kind:"micro 세트 (60 gtt/mL)",
+ t:"60 gtt/mL 세트를 쓰면 gtt/min 숫자 = mL/hr 숫자",
+ st:"60 지티티 세트를 쓰면, 분당 방울 수와 시간당 주입량의 숫자가 같다. 공식 3에서 곱하기 60, 나누기 60이 서로 지워지기 때문.",
+ tips:[{k:0,t:"공식 ③에서 × 60 ÷ 60이 지워져서 생기는 관계예요. 예: 50 mL/hr → 50 gtt/min"}]},
+{id:"f09",sec:"ex",lab:"예1",sl:"예제 1",kind:"1,000 mL · 8시간 · 20 gtt/mL",
+ kv:[["문제","1,000 mL를 8시간 동안, 20 gtt/mL 세트로"],["mL/hr","1,000 ÷ 8 = 125 mL/hr"],["gtt/min","1,000 × 20 ÷ 480(분) = 41.7 → 약 42 gtt/min"]],
+ st:"예제 1. 천 밀리리터를 8시간 동안, 20 지티티 세트로 줄 때. 시간당 주입량은 천 나누기 8, 125 밀리리터 퍼 아워. 분당 방울 수는 천 곱하기 20, 나누기 480분, 41.7, 약 42 지티티 퍼 미닛.",
+ tips:[{k:0,t:"방울 수는 정수로 맞추는 경우가 많아요. 반올림 기준은 교재·시험 지시를 따라요."}]},
+{id:"f10",sec:"ex",lab:"예2",sl:"예제 2",kind:"500 mL · 4시간 · 60 gtt/mL",
+ kv:[["문제","500 mL를 4시간 동안, 60 gtt/mL 세트로"],["mL/hr","500 ÷ 4 = 125 mL/hr"],["gtt/min","500 × 60 ÷ 240(분) = 125 gtt/min (mL/hr와 같은 숫자)"]],
+ st:"예제 2. 500 밀리리터를 4시간 동안, 60 지티티 세트로 줄 때. 시간당 주입량은 500 나누기 4, 125 밀리리터 퍼 아워. 분당 방울 수는 500 곱하기 60, 나누기 240분, 125 지티티 퍼 미닛. 시간당 주입량과 같은 숫자."},
+{id:"f11",sec:"ex",lab:"예3",sl:"예제 3",kind:"100 mL/hr · 15 gtt/mL",
+ kv:[["문제","100 mL/hr로, 15 gtt/mL 세트로"],["gtt/min","100 × 15 ÷ 60 = 25 gtt/min"]],
+ st:"예제 3. 시간당 100 밀리리터를 15 지티티 세트로 줄 때. 분당 방울 수는 100 곱하기 15, 나누기 60, 25 지티티 퍼 미닛."},
+{id:"f12",sec:"ex",lab:"예4",sl:"예제 4",kind:"남은 300 mL · 125 mL/hr",
+ kv:[["문제","남은 수액 300 mL, 125 mL/hr로 들어갈 때 남은 시간"],["계산","300 ÷ 125 = 2.4시간 → 0.4 × 60 = 24분"],["답","2시간 24분"]],
+ st:"예제 4. 남은 수액 300 밀리리터가 시간당 125 밀리리터로 들어갈 때 남은 시간은, 300 나누기 125, 2.4시간. 0.4 곱하기 60은 24분. 그래서 2시간 24분."}
+];
+const DECKS = [
+  {id:"vs", name:"프리클리닉 활력징후 측정", color:"#1F6FA8", sub:"수행항목 25개 · 간호사 대사 · 간호기록 · T.P.R. CHART", secs:SECS_VS, items:D_VS, ph:"검색 (예: 커프, 15초, 귓바퀴)"},
+  {id:"iv", name:"수액 계산 공식", color:"#1B8A5A", sub:"mL/hr · gtt/min · 주입 시간 · drop factor · 예제", secs:SECS_IV, items:D_IV, ph:"검색 (예: gtt, 60, 주입 시간)",
+   src:'일반 공식으로 정리했어요. 학교 교재·시험지와 다른 부분이 있으면 알려 주세요.<br>참고: <a href="https://learningcentre.vcc.ca/media/vcc-library/content-assets/learning-centre/worksheets/by-coursex2fprogram/health-sciences/DosageCalculationsVI_IVIntro.pdf">Vancouver Community College Learning Centre, Dosage Calculations VI – Introduction to IV</a>'}
+];
+let DK = null, D = [], SECS = [];
+
+/* ===== 저장 ===== */
+const LS = "vs-voca-v1";
+let S = {deck:"",mode:"all",order:"seq",rate:"0.9",rep:"1",gap:"1800",acts:true,recall:false,follow:true,mask:false,enVoice:false,voice:"",stars:{},stT:{},cfgT:0,dd:{st:{}},owner:null,sec:"all",last:""};
+try{ const o = JSON.parse(localStorage.getItem(LS)||"null"); if(o) S = Object.assign(S,o); }catch(e){}
+if(!["0.7","0.9","1.1"].includes(String(S.rate))) S.rate = ({"0.8":"0.7","1":"0.9","1.25":"1.1"})[String(S.rate)] || "0.9";
+function save(){ try{ localStorage.setItem(LS, JSON.stringify(S)); }catch(e){} }
+/* 기록이 바뀌면 저장 + (설치용 앱이면) 동기화 예약 */
+function changed(){ save(); try{ window.KNSync && window.KNSync.onSave(); }catch(e){} }
+const CFG_SYNC = ["mode","order","rate","rep","gap","acts","recall","follow","mask","enVoice"];
+function cfgChanged(key){ if(CFG_SYNC.includes(key)){ S.cfgT = Date.now(); S.dd = S.dd||{st:{}}; S.dd.cfg = 1; } changed(); }
+
+/* ===== 화면 ===== */
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const listEl = $("#list");
+const STAR = '<svg viewBox="0 0 24 24"><path d="M12 3.5l2.6 5.4 5.9.8-4.3 4.1 1 5.8L12 16.8l-5.2 2.8 1-5.8-4.3-4.1 5.9-.8z"/></svg>';
+const userOpen = new Set(), autoOpen = new Set(), revealed = new Set();
+let curId = null;
+
+function chipsDef(){
+  return [{k:"all",n:"전체"}].concat(SECS).concat([{k:"crit",n:"* 항목"},{k:"lines",n:"대사 있는 것"},{k:"star",n:"★ 별표"}])
+    .filter(c=> c.k==="all" || c.k==="star" || D.some(d=>inSec(d,c.k)));
+}
+function inSec(d,k){
+  if(k==="all") return true;
+  if(k==="crit") return !!d.crit;
+  if(k==="lines") return !!(d.lines&&d.lines.length);
+  if(k==="star") return !!S.stars[d.id];
+  return d.sec===k;
+}
+function plain(d){
+  return [d.lab,d.kind,d.t,(d.list||[]).join(" "),(d.kv||[]).map(x=>x.join(" ")).join(" "),
+    (d.lines||[]).map(x=>x.t).join(" "),(d.acts||[]).map(x=>x.t).join(" "),(d.tips||[]).map(x=>x.t).join(" ")].join(" ").toLowerCase();
+}
+function norm(s){ return s.toLowerCase().replace(/\s+/g,""); }
+function visible(){
+  const q = norm($("#q").value||"");
+  return D.filter(d => inSec(d,S.sec) && (!q || norm(plain(d)).includes(q)));
+}
+function renderChips(){
+  $("#chips").innerHTML = chipsDef().map(c=>{
+    const n = D.filter(d=>inSec(d,c.k)).length;
+    return `<button class="chip" data-k="${c.k}" aria-pressed="${S.sec===c.k}">${esc(c.n)}<small>${n}</small></button>`;
+  }).join("");
+}
+const TIPLAB = {1:"원본대로 고침",2:"정리본 수정 유지",3:"원본 표기 유지",0:"참고"};
+function itemHTML(d){
+  const open = userOpen.has(d.id)||autoOpen.has(d.id);
+  const secName = (SECS.find(s=>s.k===d.sec)||{}).n;
+  let body = "";
+  if(d.t) body += `<p class="it">${esc(d.t)}${d.sup&&!d.kv?'<span class="badge sup">보충</span>':''}</p>`;
+  if(d.list) body += `<div class="it"><ul>${d.list.map(x=>`<li>${esc(x)}</li>`).join("")}</ul></div>`;
+  if(d.kv) body += `<dl class="kv">${d.kv.map(([k,v])=>`<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`).join("")}</dl>`;
+  if(d.lines&&d.lines.length){
+    body += `<div class="lines">${d.lines.map((l,i)=>{
+      const key=d.id+":"+i;
+      const m = S.mask && !revealed.has(key) && d.id!==curId;
+      return `<p class="say${l.who?' pt':''}${m?' masked':''}" data-key="${key}">${l.who?`<span class="who">${esc(l.who)}</span>`:''}${l.pre?`<span class="who">${esc(l.pre)}</span>`:''}“${esc(l.t)}”${l.sup?'<span class="badge sup">보충</span>':''}</p>`;
+    }).join("")}</div>`;
+  }
+  const hasMore = (d.acts&&d.acts.length)||(d.tips&&d.tips.length);
+  let more = "";
+  if(hasMore){
+    more = `<div class="more"${open?'':' hidden'}>`+
+      (d.acts||[]).map(a=>`<p class="act"><b>${a.sup?'동작·예시 (보충)':'동작'}</b>${esc(a.t)}</p>`).join("")+
+      (d.tips||[]).map(t=>`<p class="tip k${t.k}"><b>${TIPLAB[t.k]}</b>${esc(t.t)}</p>`).join("")+`</div>`;
+  }
+  const kindTxt = d.kind || secName;
+  return `<article class="item${d.id===curId?' cur':''}" id="it-${d.id}" data-id="${d.id}">
+    <div class="ih"><span class="no${d.crit?' crit':''}">${esc(d.lab)}</span><span class="kind">${esc(kindTxt)}</span>
+    <button class="ib star" data-star="${d.id}" aria-pressed="${!!S.stars[d.id]}" aria-label="별표">${STAR}</button></div>
+    ${body}${more}
+    <div class="foot">${hasMore?`<button class="tog" data-tog="${d.id}">${open?'접기 ▴':'동작·팁 보기 ▾'}</button>`:'<span></span>'}
+    <button class="here" data-here="${d.id}">여기부터 재생</button></div>
+  </article>`;
+}
+function render(){
+  renderChips();
+  const v = visible();
+  if(!v.length){ listEl.innerHTML = `<div class="empty">조건에 맞는 항목이 없어요.</div>`; updateNow(); return; }
+  let html = "", lastSec = null;
+  v.forEach(d=>{
+    if(d.sec!==lastSec){ html += `<h2 class="sh">${esc((SECS.find(s=>s.k===d.sec)||{}).n)}</h2>`; lastSec=d.sec; }
+    html += itemHTML(d);
+  });
+  listEl.innerHTML = html;
+  updateNow();
+}
+function rerenderItem(id){
+  const el = document.getElementById("it-"+id); if(!el) return;
+  const d = D.find(x=>x.id===id); const tmp = document.createElement("div");
+  tmp.innerHTML = itemHTML(d).trim(); el.replaceWith(tmp.firstElementChild);
+}
+
+function renderHome(){
+  $("#home").innerHTML = DECKS.map(k=>{
+    const st = k.items.filter(d=>S.stars[d.id]).length;
+    const ln = k.items.filter(d=>d.lines&&d.lines.length).length;
+    return `<button class="deck" data-deck="${k.id}"><span class="dn"><i style="background:${k.color}"></i>${esc(k.name)}</span>
+      <span class="ds">${esc(k.sub)}</span>
+      <span class="dm"><span>항목 <b>${k.items.length}</b></span>${ln?`<span>대사 있는 항목 <b>${ln}</b></span>`:''}<span>★ <b>${st}</b></span></span></button>`;
+  }).join("");
+}
+function openDeck(id){
+  const k = DECKS.find(x=>x.id===id); if(!k) return;
+  if(playing) stop();
+  DK = k; D = k.items; SECS = k.secs;
+  if(S.deck!==id){ S.sec="all"; S.last=""; }
+  S.deck = id; save();
+  curId = null; order = []; pos = 0; userOpen.clear(); autoOpen.clear(); revealed.clear();
+  $("#q").value = ""; $("#q").placeholder = k.ph || "검색";
+  document.body.classList.remove("home");
+  $("#acct").hidden = true; $("#home").hidden = true; $("#deckView").hidden = false; $("#deckTools").hidden = false; $("#player").hidden = false; $("#bBack").hidden = false;
+  $("#hTitle").textContent = k.name; $("#hSub").textContent = k.sub;
+  $("#deckSrc").innerHTML = k.src ? `<div class="src">${k.src}</div>` : "";
+  $("#nowLbl").textContent = "▶ 를 누르면 보이는 목록을 처음부터 끝없이 반복해서 읽어요";
+  render(); rebuildOrder(false); window.scrollTo(0,0);
+}
+function goHome(){
+  if(playing) stop();
+  DK = null; S.deck = ""; save();
+  document.body.classList.add("home");
+  $("#acct").hidden = false; $("#home").hidden = false; $("#deckView").hidden = true; $("#deckTools").hidden = true; $("#player").hidden = true; $("#bBack").hidden = true;
+  $("#hTitle").textContent = "간호 암기 목록"; $("#hSub").textContent = "듣고 싶은 목록을 골라 주세요";
+  $("#night").hidden = true;
+  renderHome(); window.scrollTo(0,0);
+}
+$("#home").addEventListener("click",e=>{ const b=e.target.closest("[data-deck]"); if(b) openDeck(b.dataset.deck); });
+$("#bBack").addEventListener("click",goHome);
+
+/* 설정 UI */
+function bindSettings(){
+  document.querySelectorAll(".seg").forEach(seg=>{
+    const key = seg.dataset.key;
+    seg.addEventListener("click",e=>{
+      const b = e.target.closest("button"); if(!b) return;
+      S[key]=b.dataset.v; cfgChanged(key); paintSettings(); afterSetting(key);
+    });
+  });
+  document.querySelectorAll(".sw").forEach(sw=>{
+    const key = sw.dataset.key;
+    sw.addEventListener("change",()=>{ S[key]=sw.checked; cfgChanged(key); afterSetting(key); });
+  });
+  paintSettings();
+}
+function paintSettings(){
+  document.querySelectorAll(".seg").forEach(seg=>{ const key=seg.dataset.key; seg.querySelectorAll("button").forEach(b=>b.setAttribute("aria-pressed", String(S[key])===b.dataset.v)); });
+  document.querySelectorAll(".sw").forEach(sw=>{ sw.checked = !!S[sw.dataset.key]; });
+  $("#bOrder").setAttribute("aria-pressed", S.order==="rand");
+  updateSum();
+}
+/* 동기화로 다른 기기 기록이 들어왔을 때 화면 다시 그리기 */
+function refreshAll(){
+  paintSettings();
+  if(DK){ render(); if(!playing) rebuildOrder(true); } else renderHome();
+}
+function afterSetting(key){
+  if(key==="order"){ $("#bOrder").setAttribute("aria-pressed", S.order==="rand"); rebuildOrder(true); }
+  if(key==="mask"){ revealed.clear(); render(); }
+  if(key==="follow" && !S.follow){ collapseAuto(); }
+  if(key==="mode"){ rebuildOrder(true); }
+  updateSum();
+  if(playing && ["mode","rate","rep","acts","recall","voice"].includes(key)){ /* 다음 항목부터 반영 */ }
+}
+function updateSum(){
+  const m={all:"항목+대사",lines:"대사만",items:"항목만"}[S.mode];
+  const r={"0.7":"느리게","0.9":"보통","1.1":"빠르게"}[S.rate];
+  $("#setSum").textContent = `${m} · ${S.order==="rand"?"랜덤":"정방향"} · ${r}`;
+}
+
+/* ===== 음성 ===== */
+const synth = window.speechSynthesis;
+let voices = [];
+function loadVoices(){
+  if(!synth) return;
+  voices = synth.getVoices();
+  const ko = koList();
+  const sel = $("#voice");
+  sel.innerHTML = `<option value="">자동 선택</option>` + ko.map(v=>`<option value="${esc(v.voiceURI)}">${esc(v.name)}</option>`).join("");
+  sel.value = S.voice||"";
+  paintVoiceWarn();
+  if(!shownVoice) $("#voiceInfo").textContent = voices.length ? (ko.length ? `한국어 음성 ${ko.length}개를 찾았어요.` : "이 기기에서 한국어 음성을 찾지 못했어요. 기기 설정의 텍스트 음성 변환(TTS)에서 한국어 음성을 설치해 주세요.") : "음성 목록을 불러오는 중이에요.";
+  if(sel.value!==(S.voice||"")) sel.value="";
+}
+const IS_APP = !!document.querySelector('link[rel="manifest"]');
+const ART_URL = IS_APP ? "https://nurse-note.github.io/nursing-listen/" : "https://claude.ai/artifact/6ms2tFGh7mdEJyCLiS3eeo";
+let voiceChecked = false;
+function paintVoiceWarn(){
+  const box = $("#vwarn"); if(!box) return;
+  const ko = koList().length;
+  if(!synth){ box.hidden=false; box.innerHTML = "<b>이 화면에서는 음성 읽기를 쓸 수 없어요.</b> 크롬에서 열어 주세요."; return; }
+  if(!voiceChecked){ box.hidden = true; return; }
+  if(voices.length===0){
+    box.hidden=false;
+    box.innerHTML = `<b>지금 화면에서는 휴대폰의 한국어 음성을 불러오지 못했어요.</b> 그래서 한글은 건너뛰고 영어·숫자만 읽을 수 있어요. ${IS_APP ? "앱 안의 브라우저(카카오톡 등)에서 열면 이렇게 될 수 있어요." : "Claude 앱 안에서 열면 이렇게 될 수 있어요."}
+      <ol><li>아래 주소를 길게 눌러 복사해요: <code>${ART_URL}</code></li><li><b>크롬</b> 앱을 열고 주소창에 붙여 넣어요.</li><li>${IS_APP ? "크롬에서 열린 화면에서 ▶를 눌러요. (카카오톡·다른 앱 안의 브라우저에서는 안 될 수 있어요)" : "Claude 계정으로 로그인돼 있으면 이 화면이 열리고, 한국어로 읽어요."}</li></ol>`;
+  }else if(!ko){
+    box.hidden=false;
+    box.innerHTML = `<b>이 기기에서 한국어 음성을 찾지 못했어요</b> (음성 ${voices.length}개 중 한국어 0개). 휴대폰 설정에서 '텍스트 음성 변환'을 검색해 한국어 음성을 설치하거나, 크롬에서 열어 주세요: <code>${ART_URL}</code>`;
+  }else box.hidden = true;
+}
+function koList(){ return voices.filter(v=>v.lang && /^ko/i.test(v.lang.replace("_","-"))); }
+/* 간호학 단어장과 같은 방식: 기기 목록에서 첫 번째 한국어 음성 */
+function pickVoice(lang){
+  if(synth && !voices.length){ try{ voices = synth.getVoices()||[]; }catch(e){} }
+  if(lang==="ko-KR"){
+    if(S.voice){ const v = voices.find(x=>x.voiceURI===S.voice); if(v) return v; }
+    return voices.filter(v=>/^ko/i.test(v.lang||""))[0] || null;
+  }
+  return voices.filter(v=>/^en[-_]US/i.test(v.lang||""))[0] || voices.filter(v=>/^en/i.test(v.lang||""))[0] || null;
+}
+function sayify(s){
+  return s
+    .replace(/#3\/\s*day PO/gi,"하루 3회 경구")
+    .replace(/(\d+)\s*[~∼-]\s*(\d+)\s*cm/gi,"$1에서 $2 센티미터")
+    .replace(/(\d+)\s*[~∼-]\s*(\d+)/g,"$1에서 $2")
+    .replace(/(\d{2,3})\s*\/\s*(\d{2,3})/g,"$1에 $2")
+    .replace(/\bBP\s/g,"혈압 ").replace(/\bT\s(?=\d)/g,"체온 ").replace(/\bP\s(?=\d)/g,"맥박 ").replace(/\bR\s(?=\d)/g,"호흡 ")
+    .replace(/mmHg/g," 밀리미터 수은주")
+    .replace(/℃/g,"도").replace(/℉/g," 화씨")
+    .replace(/bulb/gi,"벌브").replace(/Initial/gi,"이니셜").replace(/T\.P\.R\.\s*CHART/gi,"티피알 차트")
+    .replace(/\s\+\s/g," 더하기 ").replace(/\s=\s/g,", ")
+    .replace(/→/g,", ")
+    .replace(/※\s*참고\)/g,"참고.").replace(/※/g,"")
+    .replace(/[\[\]()]/g,", ")
+    .replace(/\//g,", ")
+    .replace(/\*/g,"")
+    .replace(/\s*,\s*([.?!])/g,"$1")
+    .replace(/([.?!])\s*,\s*/g,"$1 ")
+    .replace(/(\s*,\s*){2,}/g,", ")
+    .replace(/^[\s,.]+/,"").replace(/[\s,]+$/,"")
+    .replace(/\s+/g," ").trim();
+}
+/* "{en:...}" 를 영어 조각으로 나눔 */
+function segs(text, already){
+  const out = []; const re = /\{en:([^}]*)\}/g; let i=0, m;
+  while((m=re.exec(text))){
+    if(m.index>i) out.push({lang:"ko-KR",t:already?text.slice(i,m.index):sayify(text.slice(i,m.index))});
+    out.push({lang:S.enVoice?"en-US":"ko-KR",t:m[1]}); i=re.lastIndex;
+  }
+  if(i<text.length) out.push({lang:"ko-KR",t:already?text.slice(i):sayify(text.slice(i))});
+  /* 긴 문장은 나눠 읽기 (브라우저가 긴 문장을 중간에 끊는 문제 방지) */
+  const res=[];
+  out.forEach(o=>{
+    const t=o.t.replace(/^[\s,.]+/,"").trim(); if(!t || /^[,.\s]+$/.test(t)) return;
+    if(o.lang!=="ko-KR" || t.length<=110){ res.push({lang:o.lang,t}); return; }
+    const parts = t.split(/(?<=[.?!])\s+/);
+    parts.forEach(p=>{
+      if(p.length<=130){ res.push({lang:o.lang,t:p}); return; }
+      let buf=""; p.split(/(?<=,)\s+/).forEach(c=>{ if((buf+" "+c).length>110 && buf){ res.push({lang:o.lang,t:buf}); buf=c; } else buf = buf?buf+" "+c:c; });
+      if(buf) res.push({lang:o.lang,t:buf});
+    });
+  });
+  return res;
+}
+function bodyText(d){
+  if(d.st) return d.st;
+  if(d.t) return d.t;
+  if(d.list) return d.list.join(". ");
+  if(d.kv) return d.kv.map(([k,v])=>k+", "+v).join(". ");
+  return "";
+}
+function buildSpeech(d){
+  const q = [];
+  const hasLines = d.lines && d.lines.length;
+  const MODE = S.mode;
+  if(MODE==="lines" && !hasLines){ S.mode="all"; try{ return buildSpeech(d); } finally { S.mode=MODE; } }
+  q.push(...segs(d.sl+"."));
+  if(S.mode!=="lines") q.push(...segs(bodyText(d)));
+  if(S.mode!=="items" && hasLines){
+    if(S.recall && S.mode!=="lines") q.push({pause:3000});
+    q.push({lang:"ko-KR",t:"대사."});
+    d.lines.forEach(l=>{
+      if(l.who) q.push({lang:"ko-KR",t:l.who+" 대답."});
+      q.push(...segs(l.s||l.t));
+    });
+  }
+  if(S.acts && S.mode!=="lines" && d.acts && d.acts.length){
+    d.acts.forEach(a=>q.push(...segs(a.t)));
+  }
+  return q;
+}
+const sleep = ms => new Promise(r=>setTimeout(r,ms));
+let runTok = 0;
+let noVoiceMode = false; /* 고른 음성이 오류를 내면 음성 지정 없이(언어만) 다시 읽음 */
+function speakOne(seg, tok){
+  return new Promise(res=>{
+    if(!synth){ setTimeout(res, 600); return; }
+    let done=false, w=null, retried=false;
+    const fin = ()=>{ if(done) return; done=true; clearTimeout(w); res(); };
+    const go = (useVoice)=>{
+      const u = new SpeechSynthesisUtterance(seg.t);
+      u.lang = seg.lang;
+      const v = useVoice ? pickVoice(seg.lang) : null; if(v) u.voice = v;
+      if(seg.lang==="ko-KR") showVoice(v);
+      u.rate = parseFloat(S.rate);
+      u.onend = fin;
+      u.onerror = e=>{
+        const er = e && e.error;
+        if(er==="interrupted" || er==="canceled"){ fin(); return; }
+        if(!retried && v && tok===runTok){ retried=true; noVoiceMode=true; clearTimeout(w); w=arm(); go(false); return; }
+        setSt("음성 오류: "+(er||"알 수 없음")+" · 설정의 '음성 테스트'로 확인해 주세요."); fin();
+      };
+      synth.speak(u);
+    };
+    /* 안전장치: 끝 신호가 안 오면 다음으로 넘어감 (간호학 단어장과 같은 기준) */
+    const arm = ()=> setTimeout(()=>{ if(tok===runTok){ try{synth.cancel();}catch(e){} } fin(); }, 5000 + seg.t.length*300/parseFloat(S.rate));
+    try{ w = arm(); go(!noVoiceMode); }catch(e){ fin(); }
+  });
+}
+
+let shownVoice = null;
+function showVoice(v){
+  const key = v ? v.voiceURI : "-"; if(key===shownVoice) return; shownVoice = key;
+  $("#voiceInfo").textContent = (v ? `지금 읽는 음성: ${v.name} (${v.lang})` : noVoiceMode ? "고른 음성이 오류를 내서, 음성을 지정하지 않고 기기 기본 한국어 음성으로 읽고 있어요." :
+    (voices.length ? "이 기기에서 한국어 음성을 찾지 못해 기기 기본 음성으로 읽고 있어요. 기기 설정의 텍스트 음성 변환(TTS)에서 한국어 음성을 설치해 주세요." : "기기 음성 목록을 불러오지 못해, 기기 기본 음성으로 읽고 있어요.")) + ` · 기기 음성 ${voices.length}개, 한국어 ${koList().length}개`;
+}
+/* ===== 재생 ===== */
+let playing=false, order=[], pos=0, stopAt=0, timerIv=null;
+function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+function playable(){
+  let v = visible();
+  if(S.mode==="lines" && D.some(d=>d.lines&&d.lines.length)) v = v.filter(d=>d.lines&&d.lines.length);
+  return v.map(d=>d.id);
+}
+function rebuildOrder(keep){
+  const ids = playable();
+  const cur = order[pos];
+  if(S.order==="rand"){
+    order = shuffle(ids.slice());
+    if(keep && cur && order.includes(cur)){ order.splice(order.indexOf(cur),1); order.unshift(cur); }
+    pos = 0;
+  }else{
+    order = ids;
+    pos = keep && cur && ids.includes(cur) ? ids.indexOf(cur) : 0;
+  }
+  updateNow();
+}
+function setCur(id){
+  const prev = curId; curId = id;
+  if(prev && prev!==id){
+    if(autoOpen.has(prev)) autoOpen.delete(prev);
+    rerenderItem(prev);
+  }
+  if(id){
+    if(S.follow && !userOpen.has(id)) autoOpen.add(id);
+    rerenderItem(id);
+    if(S.follow){ const el=document.getElementById("it-"+id); if(el) el.scrollIntoView({behavior:"smooth",block:"center"}); }
+  }
+  updateNow();
+}
+function collapseAuto(){ const ids=[...autoOpen]; autoOpen.clear(); ids.forEach(rerenderItem); }
+function labelOf(d){ return d ? `${d.lab}  ${d.kind || d.t || ""}`.replace(/\s+/g," ") : ""; }
+function updateNow(){
+  const d = D.find(x=>x.id===(curId||order[pos]));
+  $("#nowCnt").textContent = order.length ? `${Math.min(pos+1,order.length)}/${order.length}` : "0/0";
+  if(playing && d) $("#nowLbl").textContent = "읽는 중 · "+labelOf(d);
+  else if(d && curId) $("#nowLbl").textContent = "멈춤 · "+labelOf(d);
+  $("#nightLbl").textContent = d && playing ? labelOf(d) : "멈춤";
+}
+async function run(tok){
+  while(tok===runTok && playing){
+    if(!order.length){ rebuildOrder(false); if(!order.length){ stop(); setSt("재생할 항목이 없어요. 보기 범위를 바꿔 보세요."); return; } }
+    if(pos>=order.length){ /* 한 바퀴 끝 → 처음부터 다시 */
+      const last = order[order.length-1];
+      if(S.order==="rand"){ order = shuffle(playable()); if(order.length>1 && order[0]===last){ order.push(order.shift()); } }
+      else order = playable();
+      pos = 0; cycles++;
+      continue;
+    }
+    const id = order[pos]; const d = D.find(x=>x.id===id);
+    if(!d){ pos++; continue; }
+    S.last = id; save();
+    setCur(id);
+    const reps = parseInt(S.rep,10)||1;
+    for(let r=0;r<reps && tok===runTok;r++){
+      const q = buildSpeech(d);
+      for(const seg of q){
+        if(tok!==runTok) return;
+        if(seg.pause){ await sleep(seg.pause); continue; }
+        await speakOne(seg, tok);
+        if(tok!==runTok) return;
+        await sleep(260);
+      }
+      if(r<reps-1) await sleep(900);
+    }
+    if(tok!==runTok) return;
+    await sleep(parseInt(S.gap,10)||1800);
+    if(tok!==runTok) return;
+    pos++;
+  }
+}
+let cycles=0;
+function start(fromId){
+  if(!synth){ setSt("이 브라우저에서는 음성 읽기를 쓸 수 없어요."); }
+  rebuildOrder(true);
+  if(fromId && order.includes(fromId)){
+    if(S.order==="rand"){ order.splice(order.indexOf(fromId),1); order.unshift(fromId); pos=0; }
+    else pos = order.indexOf(fromId);
+  }else if(!fromId && !curId && S.last && order.includes(S.last) && S.order==="seq"){
+    pos = order.indexOf(S.last);
+  }
+  if(synth && !voices.length){ try{ voices = synth.getVoices()||[]; }catch(e){} }
+  if(!voices.length){ voiceChecked = true; paintVoiceWarn(); setSt("한국어 음성을 불러오지 못했어요 · 위쪽 안내대로 크롬에서 열어 주세요"); window.scrollTo(0,0); }
+  else if(!koList().length) setSt("이 기기에 한국어 음성이 없어요 · 설정 → 텍스트 음성 변환(TTS)에서 한국어 음성을 설치해 주세요");
+  playing = true; runTok++;
+  try{ synth && synth.cancel(); }catch(e){}
+  paintPlay(); lockOn(); armTimer();
+  run(runTok);
+}
+function stop(){
+  playing=false; runTok++;
+  try{ synth && synth.cancel(); }catch(e){}
+  paintPlay(); lockOff(); disarmTimer();
+  collapseAuto();
+  updateNow();
+}
+function jump(delta){
+  if(!order.length) rebuildOrder(true);
+  if(!order.length) return;
+  pos = (pos + delta + order.length) % order.length;
+  if(playing){ runTok++; try{synth.cancel();}catch(e){} run(runTok); }
+  else setCur(order[pos]);
+}
+function paintPlay(){
+  $("#playIco").innerHTML = playing ? '<path d="M6 4h4v16H6zM14 4h4v16h-4z"/>' : '<path d="M7 4v16l13-8z"/>';
+  $("#bPlay").setAttribute("aria-label", playing?"정지":"재생");
+}
+
+/* 화면 켜짐 유지 */
+let wl=null, wlState="";
+async function lockOn(){
+  if(!("wakeLock" in navigator)){ wlState="na"; paintSt(); return; }
+  try{
+    wl = await navigator.wakeLock.request("screen"); wlState="on";
+    wl.addEventListener("release",()=>{ if(wlState==="on"){ wlState="off"; paintSt(); } });
+  }catch(e){ wlState="blocked"; }
+  paintSt();
+}
+function lockOff(){ wlState=""; try{ wl && wl.release(); }catch(e){} wl=null; paintSt(); }
+document.addEventListener("visibilitychange",()=>{ if(document.visibilityState==="visible" && playing && wlState!=="on") lockOn(); });
+let stMsg="";
+function setSt(m){ stMsg=m; paintSt(); }
+function paintSt(){
+  let t = stMsg;
+  if(!t && playing){
+    const w = wlState==="on" ? "화면 켜짐 유지 중" : "화면 켜짐 유지를 이 화면에서 켤 수 없어요 · 휴대폰 '화면 자동 꺼짐'을 길게 해 주세요";
+    const tm = stopAt ? ` · ${Math.max(0,Math.ceil((stopAt-Date.now())/60000))}분 뒤 꺼짐` : " · 끝없이 반복";
+    t = w + tm;
+  }
+  $("#st").textContent = t;
+}
+function armTimer(){
+  disarmTimer();
+  const m = parseInt($("#timer").value,10)||0;
+  stopAt = m ? Date.now()+m*60000 : 0;
+  timerIv = setInterval(()=>{ if(stopAt && Date.now()>=stopAt){ stop(); $("#timer").value="0"; setSt("끄기 타이머로 멈췄어요."); } else paintSt(); }, 15000);
+  paintSt();
+}
+function disarmTimer(){ clearInterval(timerIv); timerIv=null; stopAt=0; }
+
+/* ===== 이벤트 ===== */
+$("#chips").addEventListener("click",e=>{
+  const b=e.target.closest(".chip"); if(!b) return;
+  S.sec=b.dataset.k; save(); render(); rebuildOrder(true);
+});
+let qT=null;
+$("#q").addEventListener("input",()=>{ clearTimeout(qT); qT=setTimeout(()=>{ render(); rebuildOrder(true); },200); });
+listEl.addEventListener("click",e=>{
+  const st=e.target.closest("[data-star]");
+  if(st){ const id=st.dataset.star; if(S.stars[id]) delete S.stars[id]; else S.stars[id]=1; S.stT=S.stT||{}; S.stT[id]=Date.now(); S.dd=S.dd||{st:{}}; S.dd.st=S.dd.st||{}; S.dd.st[id]=1; changed(); st.setAttribute("aria-pressed",!!S.stars[id]); renderChips(); if(S.sec==="star"){ render(); rebuildOrder(true);} return; }
+  const tg=e.target.closest("[data-tog]");
+  if(tg){ const id=tg.dataset.tog; const open=userOpen.has(id)||autoOpen.has(id);
+    if(open){ userOpen.delete(id); autoOpen.delete(id); } else userOpen.add(id);
+    rerenderItem(id); return; }
+  const hr=e.target.closest("[data-here]");
+  if(hr){ start(hr.dataset.here); return; }
+  const sy=e.target.closest(".say.masked");
+  if(sy){ revealed.add(sy.dataset.key); sy.classList.remove("masked"); }
+});
+$("#bPlay").addEventListener("click",()=>{ setSt(""); playing?stop():start(null); });
+$("#bPrev").addEventListener("click",()=>jump(-1));
+$("#bNext").addEventListener("click",()=>jump(1));
+$("#bOrder").addEventListener("click",()=>{
+  S.order = S.order==="rand"?"seq":"rand"; cfgChanged("order");
+  document.querySelectorAll('.seg[data-key="order"] button').forEach(b=>b.setAttribute("aria-pressed", b.dataset.v===S.order));
+  afterSetting("order");
+});
+$("#timer").addEventListener("change",()=>{ if(playing) armTimer(); });
+$("#voice").addEventListener("change",e=>{ S.voice=e.target.value; noVoiceMode=false; shownVoice=null; save(); });
+$("#bTest").addEventListener("click",()=>{
+  if(!synth){ $("#voiceInfo").textContent="이 브라우저에서는 음성 읽기를 쓸 수 없어요."; return; }
+  if(playing) stop();
+  try{ synth.cancel(); const u=new SpeechSynthesisUtterance("음성 테스트입니다. 들리시나요?"); u.lang="ko-KR"; const v=pickVoice("ko-KR"); if(v) u.voice=v; shownVoice=null; showVoice(v); u.rate=parseFloat(S.rate);
+    u.onerror=e=>{ $("#voiceInfo").textContent="음성 오류: "+(e.error||"알 수 없음"); };
+    synth.speak(u); }catch(e){ $("#voiceInfo").textContent="음성 오류: "+e.message; }
+});
+$("#bNight").addEventListener("click",()=>{ $("#night").hidden=false; updateNow(); });
+let lastTap=0;
+$("#night").addEventListener("click",()=>{ const n=Date.now(); if(n-lastTap<600){ $("#night").hidden=true; } lastTap=n; });
+
+/* 시작 */
+$("#ver").textContent = `버전 ${VERSION} (${VDATE})`;
+$("#bOrder").setAttribute("aria-pressed", S.order==="rand");
+try{ if(!localStorage.getItem(LS)) $("#setBox").open = true; }catch(e){ $("#setBox").open = true; }
+bindSettings(); updateSum();
+if(S.deck && DECKS.some(k=>k.id===S.deck)) openDeck(S.deck); else goHome();
+if(synth){ loadVoices(); try{ synth.addEventListener("voiceschanged", loadVoices); }catch(e){ synth.onvoiceschanged = loadVoices; } setTimeout(loadVoices, 1000); setTimeout(()=>{ voiceChecked = true; loadVoices(); }, 3000); } else setSt("이 브라우저에서는 음성 읽기를 쓸 수 없어요.");
+window.KN = { get S(){ return S; }, save: ()=>save(), refresh: ()=>refreshAll() };
+window.__VS = {get D(){return D;}, openDeck, goHome, buildSpeech, sayify, segs, get order(){return order;}, get pos(){return pos;}, get cur(){return curId;}};
+</script>
+<script type="module" src="sync.js?v=1.2.0"></script>
+<script>
+if ("serviceWorker" in navigator) { window.addEventListener("load", () => { navigator.serviceWorker.register("sw.js").catch(() => {}); }); }
+</script>
+</body>
+</html>
